@@ -1,0 +1,17 @@
+{
+  "name": "cyruscollier/wordpress-develop",
+  "description": "Fork of WordPress core development repository, with Composer support and additional configuration options",
+  "keywords": ["wordpress", "blog", "cms", "test", "phpunuit", "qunit"],
+  "type": "library",
+  "homepage": "https://developer.wordpress.org/",
+  "license": "GPL-2.0+",
+  "authors": [
+    {
+      "name": "WordPress Community",
+      "homepage": "http://wordpress.org/about/"
+    }
+  ],
+  "require": {
+    "phpunit/phpunit": "^5.6"
+  }
+}
