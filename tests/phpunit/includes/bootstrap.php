@@ -18,6 +18,11 @@ if ( ! file_exists( $config_file_path . '/wp-tests-config.php' ) ) {
 }
 $config_file_path .= '/wp-tests-config.php';
 
+// Check phpunit.xml config file for config file path constant instead
+if ( !is_readable( $config_file_path ) && defined( 'WP_CONFIG_FILE_PATH' ) ) {
+    $config_file_path = WP_CONFIG_FILE_PATH;
+}
+
 /*
  * Globalize some WordPress variables, because PHPUnit loads this file inside a function
  * See: https://github.com/sebastianbergmann/phpunit/issues/325
