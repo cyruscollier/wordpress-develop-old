@@ -11,40 +11,38 @@
  * @group multisite
  */
 class Tests_Option_NetworkOption extends WP_UnitTestCase {
-	function test_add_network_option_not_available_on_other_network() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test requires multisite' );
-		}
 
-		$id = self::factory()->network->create();
+	/**
+	 * @group ms-required
+	 */
+	function test_add_network_option_not_available_on_other_network() {
+		$id     = self::factory()->network->create();
 		$option = __FUNCTION__;
-		$value = __FUNCTION__;
+		$value  = __FUNCTION__;
 
 		add_site_option( $option, $value );
 		$this->assertFalse( get_network_option( $id, $option, false ) );
 	}
 
+	/**
+	 * @group ms-required
+	 */
 	function test_add_network_option_available_on_same_network() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test requires multisite' );
-		}
-
-		$id = self::factory()->network->create();
+		$id     = self::factory()->network->create();
 		$option = __FUNCTION__;
-		$value = __FUNCTION__;
+		$value  = __FUNCTION__;
 
 		add_network_option( $id, $option, $value );
 		$this->assertEquals( $value, get_network_option( $id, $option, false ) );
 	}
 
+	/**
+	 * @group ms-required
+	 */
 	function test_delete_network_option_on_only_one_network() {
-		if ( ! is_multisite() ) {
-			$this->markTestSkipped( 'Test requires multisite' );
-		}
-
-		$id = self::factory()->network->create();
+		$id     = self::factory()->network->create();
 		$option = __FUNCTION__;
-		$value = __FUNCTION__;
+		$value  = __FUNCTION__;
 
 		add_site_option( $option, $value );
 		add_network_option( $id, $option, $value );
@@ -54,13 +52,10 @@ class Tests_Option_NetworkOption extends WP_UnitTestCase {
 
 	/**
 	 * @ticket 22846
+	 * @group ms-excluded
 	 */
 	public function test_add_network_option_is_not_stored_as_autoload_option() {
 		$key = __FUNCTION__;
-
-		if ( is_multisite() ) {
-			$this->markTestSkipped( 'Does not apply when used in multisite.' );
-		}
 
 		add_network_option( null, $key, 'Not an autoload option' );
 
@@ -71,13 +66,10 @@ class Tests_Option_NetworkOption extends WP_UnitTestCase {
 
 	/**
 	 * @ticket 22846
+	 * @group ms-excluded
 	 */
 	public function test_update_network_option_is_not_stored_as_autoload_option() {
 		$key = __FUNCTION__;
-
-		if ( is_multisite() ) {
-			$this->markTestSkipped( 'Does not apply when used in multisite.' );
-		}
 
 		update_network_option( null, $key, 'Not an autoload option' );
 
@@ -94,7 +86,7 @@ class Tests_Option_NetworkOption extends WP_UnitTestCase {
 	 */
 	function test_add_network_option_network_id_parameter( $network_id, $expected_response ) {
 		$option = rand_str();
-		$value = rand_str();
+		$value  = rand_str();
 
 		$this->assertEquals( $expected_response, add_network_option( $network_id, $option, $value ) );
 	}
@@ -114,19 +106,67 @@ class Tests_Option_NetworkOption extends WP_UnitTestCase {
 	function data_network_id_parameter() {
 		return array(
 			// Numeric values should always be accepted.
-			array( 1,   true ),
+			array( 1, true ),
 			array( '1', true ),
-			array( 2,   true ),
+			array( 2, true ),
 
 			// Null, false, and zero will be treated as the current network.
-			array( null,  true ),
+			array( null, true ),
 			array( false, true ),
-			array( 0,     true ),
-			array( '0',   true ),
+			array( 0, true ),
+			array( '0', true ),
 
 			// Other truthy or string values should be rejected.
-			array( true,     false ),
+			array( true, false ),
 			array( 'string', false ),
 		);
+	}
+
+	/**
+	 * @ticket 43506
+	 * @group ms-required
+	 */
+	public function test_get_network_option_sets_notoptions_if_option_found() {
+		$network_id     = get_current_network_id();
+		$notoptions_key = "$network_id:notoptions";
+
+		$original_cache = wp_cache_get( $notoptions_key, 'site-options' );
+		if ( false !== $original_cache ) {
+			wp_cache_delete( $notoptions_key, 'site-options' );
+		}
+
+		// Retrieve any existing option.
+		get_network_option( $network_id, 'site_name' );
+
+		$cache = wp_cache_get( $notoptions_key, 'site-options' );
+		if ( false !== $original_cache ) {
+			wp_cache_set( $notoptions_key, $original_cache, 'site-options' );
+		}
+
+		$this->assertSame( array(), $cache );
+	}
+
+	/**
+	 * @ticket 43506
+	 * @group ms-required
+	 */
+	public function test_get_network_option_sets_notoptions_if_option_not_found() {
+		$network_id     = get_current_network_id();
+		$notoptions_key = "$network_id:notoptions";
+
+		$original_cache = wp_cache_get( $notoptions_key, 'site-options' );
+		if ( false !== $original_cache ) {
+			wp_cache_delete( $notoptions_key, 'site-options' );
+		}
+
+		// Retrieve any non-existing option.
+		get_network_option( $network_id, 'this_does_not_exist' );
+
+		$cache = wp_cache_get( $notoptions_key, 'site-options' );
+		if ( false !== $original_cache ) {
+			wp_cache_set( $notoptions_key, $original_cache, 'site-options' );
+		}
+
+		$this->assertSame( array( 'this_does_not_exist' => true ), $cache );
 	}
 }

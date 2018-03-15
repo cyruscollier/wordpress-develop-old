@@ -18,11 +18,11 @@ class Tests_XMLRPC_wp_getMediaItem extends WP_XMLRPC_UnitTestCase {
 
 		add_theme_support( 'post-thumbnails' );
 
-		$filename = ( DIR_TESTDATA.'/images/waffles.jpg' );
+		$filename = ( DIR_TESTDATA . '/images/waffles.jpg' );
 		$contents = file_get_contents( $filename );
-		$upload = wp_upload_bits(basename($filename), null, $contents);
+		$upload   = wp_upload_bits( basename( $filename ), null, $contents );
 
-		$this->attachment_id = $this->_make_attachment( $upload, self::$post_id );
+		$this->attachment_id   = $this->_make_attachment( $upload, self::$post_id );
 		$this->attachment_data = get_post( $this->attachment_id, ARRAY_A );
 
 		set_post_thumbnail( self::$post_id, $this->attachment_id );
@@ -38,7 +38,7 @@ class Tests_XMLRPC_wp_getMediaItem extends WP_XMLRPC_UnitTestCase {
 
 	function test_invalid_username_password() {
 		$result = $this->myxmlrpcserver->wp_getMediaItem( array( 1, 'username', 'password', 0 ) );
-		$this->assertInstanceOf( 'IXR_Error', $result );
+		$this->assertIXRError( $result );
 		$this->assertEquals( 403, $result->code );
 	}
 
@@ -47,7 +47,7 @@ class Tests_XMLRPC_wp_getMediaItem extends WP_XMLRPC_UnitTestCase {
 
 		$fields = array( 'post' );
 		$result = $this->myxmlrpcserver->wp_getMediaItem( array( 1, 'author', 'author', $this->attachment_id, $fields ) );
-		$this->assertNotInstanceOf( 'IXR_Error', $result );
+		$this->assertNotIXRError( $result );
 
 		// Check data types
 		$this->assertInternalType( 'string', $result['attachment_id'] );
